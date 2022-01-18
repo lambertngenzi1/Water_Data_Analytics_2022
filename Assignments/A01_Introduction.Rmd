@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1: Introduction"
-author: "Student Name"
+author: "Lambert Ngenzi"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -26,25 +26,50 @@ Target due date: 2022-01-18
 
 1. Post the link to your forked GitHub repository below. Your repo should include one or more commits and an edited README file.  
 
->  Link:
+>  Link:https://github.com/lambertngenzi1/Water_Data_Analytics_2022.git
 
 ## Data Visualization Exercises
 
 2. Set up your work session. Check your working directory, load packages `tidyverse`,  `dataRetrieval`, and `zoo`. Set your ggplot theme as theme_classic (you may need to look up how to set your theme).
 
-```{r, message = FALSE}
 
+```{r, message = FALSE}
+#install.packages("tidyverse")
+#install.packages("dataRetrieval")
+#install.packages("zoo")
+#nstall.packages("ggrepel")
+
+library(tidyverse)
+library(dataRetrieval)
+library(zoo)
 ```
+
 
 3. Upload discharge data for the Eno River at site 02096500 for the same dates as we studied in class (2012-01-01 through 2021-12-31). Obtain data for discharge. Rename the columns with informative titles, as we did in class. 
 
 ```{r}
+EnoDischarge <- readNWISdv(siteNumbers = "02096500" ,
+                           parameterCd = "00060" , # discharge (ft3/s)
+ 
+                            startDate = "2012-01-01" , endDate = "2021-12-31")
+
 
 ```
 
+```{r}
+names(EnoDischarge)[4:5] <- c("Discharge_cfs", "Approval.code")
+```
 
 4. Build a plot called EnoPlot2. Use the base plot we made in class and make the following changes: 
 
+```{r}
+
+EnoPlot2 <- ggplot(EnoDischarge, aes(x = Date ,
+                                     y = Discharge_cfs)) +
+  geom_line() + 
+  xlab("Year")
+EnoPlot2
+```
 * Add a column to your data frame for discharge in meters cubed per second. hint: package dplyr in tidyverse includes a `mutate` function
 * Add a column in your data frame for a 30-day rolling mean of the metric discharge. (hint: package dplyr in tidyverse includes a `mutate` function. hint: package zoo includes a `rollmean` function)
 * Create two geom_line aesthetics, one for daily discharge (meters cubed per second) and one for rolling mean of discharge. Color these differently.
