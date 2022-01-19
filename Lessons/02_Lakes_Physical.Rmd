@@ -23,8 +23,8 @@ What are the physical properties of lakes?
 getwd()
 
 # install.packages("tidyverse")
-# install.packages("lubridate")
-# install.packages("rLakeAnalyzer")
+install.packages("lubridate")
+install.packages("rLakeAnalyzer")
 
 # load packages
 library(tidyverse)
@@ -52,6 +52,7 @@ Common steps/checks for data wrangling:
 # Is the date column perceived as a date by R?
 class(NTLdata$sampledate)
 NTLdata$sampledate <- as.Date(NTLdata$sampledate, format = "%m/%d/%y")
+# Y is for 4 digits, small y is for 2 digits 
 class(NTLdata$sampledate)
 # What does this column look like now?
 
@@ -60,6 +61,7 @@ dim(NTLdata)
 NTLdata <- NTLdata %>%
   drop_na(temperature_C)
 dim(NTLdata)  
+# Since we alredy told where is the file, we can just specify
 
 # How many observations are there for each lake?
 summary(NTLdata$lakename)
@@ -69,9 +71,12 @@ summary(as.factor(NTLdata$lakename))
 NTLdata_PeterPaul <- NTLdata %>%
   filter(lakename %in% c("Paul Lake", "Peter Lake"))
 
+
+
 # What is another way to use the filter command to get to the same result?
 NTLdata_PeterPaul <- NTLdata %>%
   filter(lakename == "Paul Lake" | lakename == "Peter Lake")
+# | is for or 
 
 # Make two data frames, one for each lake
 Pauldata <- NTLdata %>%
