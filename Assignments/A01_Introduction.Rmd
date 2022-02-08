@@ -70,6 +70,11 @@ EnoPlot2 <- ggplot(EnoDischarge, aes(x = Date ,
   xlab("Year")
 EnoPlot2
 ```
+
+```{r}
+theme_set(theme_classic())
+```
+
 * Add a column to your data frame for discharge in meters cubed per second. hint: package dplyr in tidyverse includes a `mutate` function
 * Add a column in your data frame for a 30-day rolling mean of the metric discharge. (hint: package dplyr in tidyverse includes a `mutate` function. hint: package zoo includes a `rollmean` function)
 * Create two geom_line aesthetics, one for daily discharge (meters cubed per second) and one for rolling mean of discharge. Color these differently.
@@ -79,8 +84,23 @@ EnoPlot2
 * Add a legend. (hint: Google "add legend two geom layers ggplot")
 
 ```{r}  
+EnoPlot2 <- EnoDischarge %>%
+  mutate(Discharge_metric = Discharge_cfs/35.3147, Discharge_RollMean = rollmean(Discharge_metric, 30, fill = NA))
+```
 
 
+
+```{r}  
+EnoPlot2 <-
+ggplot(EnoDischarge, aes(x = Date)) +
+geom_line(aes(y = Discharge_metric, color = "Daily")) +
+geom_line(aes(y = Discharge_RollMean, color = "30-day")) +
+scale_color_manual(values = c("Daily" = "darkgray", "30-day" = "darkgreen")) +
+scale_y_log10(name = expression("Discharge (m"^3*"/s)")) +
+theme_classic() +
+theme(axis.title.x = element_blank(), legend.title = element_blank(),
+legend.position = "top")
+EnoPlot2
 ```
 
 5. In what ways was the second plot a more effective visualization than the first? 
@@ -89,7 +109,7 @@ EnoPlot2
 
 6. What portions of the coding were challenging for you?
 
-> ANSWER: 
+> ANSWER: The last portion was a bit challenging for me. 
 
 7. Interpret the graph you made. What are the things you notice about within- and across-year variability, as well as the differences between daily values and 30-day rolling mean?
 

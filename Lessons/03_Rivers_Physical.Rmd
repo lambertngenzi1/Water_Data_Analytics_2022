@@ -16,10 +16,12 @@ editor_options:
 ## Opening Discussion
 What are the physical properties of streams and rivers? What variables might be of interest?
 
+shape and distances, sediment type, discharge (veolocity), slope, sinuosity
 ## Session Set Up
 
 ```{r, message = FALSE}
 getwd()
+install.packages("cowplot")
 
 library(tidyverse)
 library(dataRetrieval)
@@ -44,13 +46,13 @@ names(EnoDischarge.ratingcurve)[4:7] <- c("Discharge", "D.Approval.Code",
 
 ggplot(EnoDischarge.ratingcurve, aes(x = Discharge, y = Gage.Height)) +
   geom_point(alpha = 0.5) 
-
+## As gage height increases, Discharge increases as well
 ```
 
 ### Data import
 We will be using the dataRetrieval package, which allows us to access USGS hydrologic data. We will be using the hydrologic data capabilities of this package today, but the package also comes with additional functionality to access water quality data from the Water Quality Portal. 
 
-dataRetrieval Vignette:
+dataRetrieval Vignette: ##(check it out)
 https://cran.r-project.org/web/packages/dataRetrieval/vignettes/dataRetrieval.html
 
 The function `whatNWISdata` allows us to access metadata about a site, including what variables have been monitored at that site, start and end dates, and the number of samples for a given variable.
@@ -64,7 +66,7 @@ We will be analyzing data from the following rivers/streams today:
 * Nehalem River in Oregon
 
 ```{r}
-EnoSummary <- whatNWISdata(siteNumbers = "02096500")
+EnoSummary <- whatNWISdata(siteNumbers = "02096500") ## can look what data are online 
 VerdeSummary <- whatNWISdata(siteNumbers = "09504000")
 BitterrootSummary <- whatNWISdata(siteNumbers = "12344000")
 SaukSummary <- whatNWISdata(siteNumbers = "05270500")
@@ -161,7 +163,7 @@ VerdePlot <-
   labs(x = "", y = expression("Discharge (ft"^3*"/s)"), title = "Verde River") + 
   theme(plot.title = element_text(margin = margin(b = -10), size = 12), 
         axis.text.x = element_blank(), axis.title.x = element_blank())
-VerdePlot
+VerdePlot ##ephemeral river 
 
 BitterrootPlot <- 
   ggplot(CombinedDischarge, aes(x = Date, y = Bitterroot.Discharge)) +
@@ -188,7 +190,7 @@ NehalemPlot
 
 CombinedPlot <- 
   plot_grid(EnoPlot, VerdePlot, BitterrootPlot, SaukPlot, NehalemPlot, 
-            ncol = 1)
+            ncol = 1, rel_heights = c(1, 1, 1, 1, 1.2), align = "hv")
 CombinedPlot
 
 # add relative heights and align axes

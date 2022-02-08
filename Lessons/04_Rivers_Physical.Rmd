@@ -36,7 +36,7 @@ theme_set(theme_classic())
 
 A **recurrence interval** is the past recurrence of an event, in this case a peak annual discharge measurement of a given magnitude. The value of a recurrence interval corresponds to the average number of years between discharge of a given magnitude. Typically the minimum amount of years required to construct a recurrence interval is 10, but 30 is more robust. A recurrence interval, T, is calculated as: 
 
-$T = (n+1)/m$
+$T = (n+1)/m$  # $ sign in front is to indicate is a fromula 
 
 where n is the number of years and m is the ranking of an event within the observed period. We add one to n because we are computing the recurrence interval for a discharge event of a given magnitude *or greater*. 
 
@@ -98,7 +98,7 @@ Let's display and model the relationship between peak annual disharge and recurr
 ggplot(EnoRecurrence, aes(x = RecurrenceInterval, y = PeakDischarge)) +
   geom_point() +
   scale_x_log10() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm", color ="black", se = FALSE) ## lm is linear model 
 
 Eno.RImodel <- lm(data = EnoRecurrence, PeakDischarge ~ log10(RecurrenceInterval))
 summary(Eno.RImodel)
@@ -140,11 +140,13 @@ Eno.RImodel$coefficients[1] + Eno.RImodel$coefficients[2]*log10(500)
 
 What differences did you see for the recurrence intervals built under different periods of record? How would your prediction of flood events differ if you were to use these models for forecasting purposes? 
 
->
+> Eno river not stationary rivers displaying and climate change is also affecting 
+When wanting to predict or forescast need. 
 
 What would you recommend for a watershed manager seeking to build the most accurate recurrence interval model for the Eno River?
 
-> 
+> Most recent data ar better to use when protecting agasint flooding 
+
 
 
 ### Examining the effects of urbanization on discharge

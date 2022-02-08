@@ -142,13 +142,20 @@ ggplot(subset(Pauldata, year4 == 1993),
 
 # Now, make a plot as above but with dissolved oxygen saturation instead of temperature.
 
+ggplot(subset(Pauldata, year4 == 1993), 
+       aes(x = dissolvedOxygen, y = depth, color = daynum)) +
+  geom_point(alpha = 0.5) +
+  scale_y_reverse() +
+  scale_color_viridis_c() +
+  labs(x = expression("DO"(mg/L)), y = "Depth (m)", color = "DOY") #lower concentration at the bottom, on the surface higher 
 
+#The bulge is called: deep chlorocal maximum
 ```
 
 Why does mixing occur in the spring and fall? What are the mechanisms that make this possible?
 <add notes here>
 
-
+Desnity gets smaller as the appelum become smaller 
 
 ### Calculating thermoclines
 
@@ -159,7 +166,8 @@ Pauldata_thermo <- Pauldata %>%
   group_by(year4, daynum, sampledate) %>%
   # calculate thermoclines based on temperature profiles. 
   # seasonal = FALSE calculates the thermocline as the maximum density gradient
-  # seasonal = TRUE calculates the thermocline as the deepest density gradient
+  # seasonal = TRUE calculates the thermocline as the deepest density gradient 
+ ## >1 degree over less than 1m of depth
   summarise(thermocline = thermo.depth(wtr = temperature_C, depths = depth, seasonal = FALSE)) %>%
   # remove all thermoclines within 1 m of the surface. these can represent transient stratification.
   filter(thermocline > 1)
@@ -171,7 +179,7 @@ ggplot(Pauldata_thermo, aes(x = daynum, y = thermocline)) +
 
 How does thermocline depth change over the course of the year? When do we observe the most variability in thermocline depth?
 <add notes here>
-
+##Thermocline deepening as the years go on. More variability early in the year 
 
 ### Climate change
 
