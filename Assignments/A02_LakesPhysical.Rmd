@@ -1,6 +1,6 @@
 ---
 title: "Assignment 2: Physical Properties of Lakes"
-author: "Student Name"
+author: "Lambert Ngenzi"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -31,7 +31,22 @@ Target due date: 2022-01-25
 5. Set your ggplot theme (can be theme_classic or something else)
 
 ```{r}
+# Checking my working directory       #Once you set a working dr??
+getwd()
+library(tidyverse)
+library(lubridate)
+library(rLakeAnalyzer)
 
+```
+```{r}
+NTL_LTER <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
+
+NTL_LTER$sampledate <- as.Date(NTL_LTER$sampledate, format = "%m/%d/%y")
+
+NTL_LTER_Month <- NTL_LTER %>% mutate(Month = month(sampledate)) %>% 
+  drop_na(temperature_C)
+
+theme_classic()
 
 ```
 
@@ -43,7 +58,11 @@ What seasonal trends do you observe, and do these manifest differently in each l
 
 ```{r}
 
-
+ggplot(subset(NTL_LTER_Month, year4 == 1993), aes(temperature_C, dissolvedOxygen, daynum)) +
+  geom_point(alpha = 0.5) + scale_y_reverse() + 
+  facet_wrap(vars(lakename)) +
+  scale_color_viridis_c() + 
+  labs(x = expression("Temperature"(degree*c)), y = "depth(m)", color = "DOY")
 ```
 
 6. Create a new dataset that calculates thermocline depths for all lakes on all dates (hint: you will need group by lake, year, month, DOY, and sample date).
@@ -53,6 +72,20 @@ What seasonal trends do you observe, and do these manifest differently in each l
 Do all the lakes have a similar seasonal progression of thermocline deepening? Which lakes have the deepest thermoclines, and how does this relate to their maximum depth? 
 
 ```{r}
+NTL_LTER_Spec <- NTL_LTER_Month %>% group_by(lakename, daynum, year4, Month,
+                                  dissolvedOxygen, sampledate) %>% 
+summarise(thermocline =thermo.depth(temperature_C, depth,seasonal = FALSE)) %>% 
+  filter(thermocline > 1)
 
+ggplot(NTL_LTER_Spec, aes(x = daynum, y = thermocline, color = lakename)) +
+geom_point(alpha = 0.5) +
+labs(x = "DOY", y = "Thermocline depth (m)", color = "Lake") +
+scale_color_viridis_d()
+
+ggplot(NTL_LTER_Spec, aes(y = thermocline, x = lakename, fill = as.factor(Month))) +
+geom_boxplot() +
+labs(x = "Lake", y = "Thermocline depth (m)", fill = "Month") +
+scale_fill_viridis_d() +
+theme(legend.position = "top")
 ```
 

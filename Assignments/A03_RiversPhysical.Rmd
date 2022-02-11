@@ -1,6 +1,6 @@
 ---
 title: "Assignment 3: Physical Properties of Rivers"
-author: "Student Name"
+author: "Lambert Ngenzi"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -29,7 +29,14 @@ Target due date: 2022-02-08
 3. Build a ggplot of discharge over the entire period of record. 
 
 ```{r}
-
+#1 
+getwd()
+library(tidyverse)
+library(dataRetrieval)
+library(lfstat)
+theme_classic()
+#2
+Mystery_Site_Discharge <- read.csv(../data/)
 
 ```
 
