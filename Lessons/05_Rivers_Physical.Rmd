@@ -72,7 +72,7 @@ EnoDischarge <- EnoDischarge %>%
          Year = year(Date), 
          WaterYear = water_year(Date))
 EnoDischarge$WaterYear <- as.numeric(as.character(EnoDischarge$WaterYear))
-# If something is a factor, need to make it a charactor first 
+# If something is a factor, need to make it a character first 
 
 # plot baseflow and total flow
 ggplot(EnoDischarge, aes(x = Date, y = Discharge)) +
