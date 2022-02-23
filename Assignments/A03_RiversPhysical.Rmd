@@ -36,7 +36,19 @@ library(dataRetrieval)
 library(lfstat)
 theme_classic()
 #2
-Mystery_Site_Discharge <- read.csv(../data/)
+Mystery_Site_Discharge <-readNWISdv(siteNumbers = "03431700",
+                     parameterCd = c("00060", "00065"),
+                     startDate = "1964-10-01",
+                     endDate = "2021-09-30")
+Mystery_Site_Discharge   
+# Renaming column 4 and 5
+names(Mystery_Site_Discharge)[4:5] <-  c("Discharge", "Approval.Code")
+
+#3 Building a ggplot
+Myster_Plot <- ggplot(Mystery_Site_Discharge, aes(Date, Discharge)) +
+  geom_line() +
+  labs(x= "Year", y = "Discharge (cfs)")
+print(Myster_Plot)
 
 ```
 
@@ -46,7 +58,14 @@ Mystery_Site_Discharge <- read.csv(../data/)
 5. Create a new data frame called "MysterySiteDischarge.Pattern" that has columns for Day.of.Year, median discharge for a given day of year, 75th percentile discharge for a given day of year, and 25th percentile discharge for a given day of year. Hint: the summarise function includes `quantile`, wherein you must specify `probs` as a value between 0 and 1.
 6. Create a plot of median, 75th quantile, and 25th quantile discharges against day of year. Median should be black, other lines should be gray. 
 ```{r}
-
+#
+Mystery_Site_Discharge <- Mystery_Site_Discharge %>%
+  mutate(Baseflow_lfstat = baseflow(Discharge), 
+         Stormflow_lfstat = Discharge - Baseflow_lfstat,
+         Year = year(Date), 
+         WaterYear = water_year(Date))
+Mystery_Site_Discharge <- as.numeric(as.character(Mystery_Site_Discharge$WaterYear))
+  
 
 ```
 
