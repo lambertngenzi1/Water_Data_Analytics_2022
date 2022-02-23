@@ -1,6 +1,6 @@
 ---
 title: "Assignment 4: Physical Properties of Rivers"
-author: "Student Name"
+author: "Lambert Ngenzi"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -30,8 +30,52 @@ Target due date: 2022-02-15
 4. Calculate annual total discharge, annual baseflow, and annual proportion baseflow for the two sites.
 
 ```{r}
+#1
+getwd()
+library(EcoHydRology)
+library(tidyverse)
+library(cowplot)
+library(dataRetrieval)
+library(lubridate)
+library(lfstat)
+theme_classic
+
+#2
+BitterrootQ <- readNWISdv(siteNumbers = "12344000",
+                     parameterCd = "00060", 
+                     startDate = "2012-10-01",
+                     endDate = "2021-09-30")
+names(BitterrootQ)[4:5] <- c("Discharge", "Approval.Code")
+attr(BitterrootQ, "siteInfo")
+  # format change 
+BitterrootQ$Date <- as.Date(BitterrootQ$Date, format = "%Y-%m-%d")
 
 
+NehalemQ <- readNWISdv(siteNumbers = "14299800",
+                     parameterCd = "00060", 
+                      startDate = "2012-10-01",
+                     endDate = "2021-09-30")
+names(NehalemQ)[4:5] <- c("Discharge", "Approval.Code")
+attr(NehalemQ, "siteInfo")
+NehalemQ$Date <- as.Date(NehalemQ$Date, format = "%Y-%m-%d")
+
+#3 Create WaterYear and baseflow and stormflow 
+BitterrootQ_Flow <- BitterrootQ %>% 
+  mutate(WaterYear = water_year(Date),
+         Baseflow_lfstat = baseflow(Discharge),
+         Stormflow_lfstat = Discharge - Baseflow_lfstat)
+
+#BitterrootQ$WaterYear <- water_year()
+
+BitterrootQ$WaterYear <- as.numeric(as.character(BitterrootQ$WaterYear))
+
+
+NehalemQ_Flow <- NehalemQ %>% 
+  mutate(WaterYear = water_year(Date),
+         Baseflow_lfstat = baseflow(Discharge),
+         Stormflow_lfstat = Discharge - Baseflow_lfstat)
+
+  
 ```
 
 ## Analyze seasonal patterns in discharge

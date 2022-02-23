@@ -34,6 +34,8 @@ getwd()
 library(tidyverse)
 library(dataRetrieval)
 library(lfstat)
+library(dplyr)
+library(lubridate)
 theme_classic()
 #2
 Mystery_Site_Discharge <-readNWISdv(siteNumbers = "03431700",
@@ -58,20 +60,35 @@ print(Myster_Plot)
 5. Create a new data frame called "MysterySiteDischarge.Pattern" that has columns for Day.of.Year, median discharge for a given day of year, 75th percentile discharge for a given day of year, and 25th percentile discharge for a given day of year. Hint: the summarise function includes `quantile`, wherein you must specify `probs` as a value between 0 and 1.
 6. Create a plot of median, 75th quantile, and 25th quantile discharges against day of year. Median should be black, other lines should be gray. 
 ```{r}
-#
-Mystery_Site_Discharge <- Mystery_Site_Discharge %>%
-  mutate(Baseflow_lfstat = baseflow(Discharge), 
-         Stormflow_lfstat = Discharge - Baseflow_lfstat,
-         Year = year(Date), 
-         WaterYear = water_year(Date))
-Mystery_Site_Discharge <- as.numeric(as.character(Mystery_Site_Discharge$WaterYear))
-  
+# Converting to date format 
+Mystery_Site_Discharge$Date <- as.Date(Mystery_Site_Discharge$Date,
+                                       format = "%Y-%m%-%d")
+#4
+Mystery_Site_Discharge <- mutate(Mystery_Site_Discharge,
+WaterYear = water_year(Date, origin = "usgs"),
+DayOfYear = yday(Date))
+
+Mystery_Site_Discharge$WaterYear <- as.numeric(as.character(Mystery_Site_Discharge$WaterYear))
+#5  
+Mystery_Site_Discharge.Pattern <- Mystery_Site_Discharge %>% 
+  group_by(DayOfYear) %>% 
+  summarise(Median.Discharge = median(Discharge),
+            Q75.Discharge = quantile(Discharge, probs = 0.75),
+Q25.Discharge = quantile(Discharge, probs = 0.25))
+
+#6
+ggplot(Mystery_Site_Discharge.Pattern, aes(x = DayOfYear)) +
+geom_line(aes(y = Median.Discharge)) +
+geom_line(aes(y = Q75.Discharge), color = "gray") +
+geom_line(aes(y = Q25.Discharge), color = "gray") +
+scale_x_log10() +
+  xlim(1, 400)
 
 ```
 
 7. What seasonal patterns do you see? What does this tell you about precipitation patterns and climate in the watershed?
 
-> 
+> Highest flows happen in winter and fall. Signaling no strong snowmelt. Higher precipitation in winter
 
 ## Create and analyze recurrence intervals
 
@@ -82,7 +99,34 @@ Mystery_Site_Discharge <- as.numeric(as.character(Mystery_Site_Discharge$WaterYe
 10. Create a model to predict the discharge for a 100-year flood for both sets of recurrence intervals. 
 
 ```{r}
+#8
+Mystery_Site_Annual_30yr <- Mystery_Site_Discharge %>% 
+  filter(WaterYear < 1996) %>% 
+  group_by(WaterYear) %>% 
+  summarise(PeakDischarge = max(Discharge)) %>% 
+  mutate(Rank = rank(-PeakDischarge),
+RecurrenceInterval = (length(WaterYear) + 1)/Rank, 
+Probability = 1/RecurrenceInterval)
 
+Mystery_site_Annual_Full <- Mystery_Site_Discharge %>% 
+  group_by(WaterYear) %>% 
+  summarise(PeakDischarge = max(Discharge)) %>% 
+  mutate(Rank = rank(-PeakDischarge),
+         RecurrenceInterval = (length(WaterYear) + 1)/Rank,
+         Probabilty = 1/RecurrenceInterval)
+
+#9 
+
+ggplot(Mystery_Site_Annual_30yr, aes(RecurrenceInterval, PeakDischarge)) +
+  geom_point() +
+  geom_point(data = Mystery_site_Annual_Full, color = "#02818a", 
+            aes(RecurrenceInterval, PeakDischarge)) +
+  scale_x_log10()
+  
+#10
+
+Mystery_Model30yr <- lm(data = Mystery_Site_Annual_30yr, PeakDischarge ~ log10(RecurrenceInterval))
+summary(Mystery_Model30yr)
 
 ```
 
