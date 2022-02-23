@@ -212,10 +212,11 @@ ggplot(LAGOStrophic, aes(x = state, y = TSI.chl)) +
   geom_violin(draw_quantiles = 0.50) +
   geom_hline(yintercept = 40, lty = 2, color = "gray") +
   geom_hline(yintercept = 50, lty = 2, color = "gray") +
-  geom_hline(yintercept = 70, lty = 2, color = "gray")
-
+  geom_hline(yintercept = 70, lty = 2, color = "gray") +
+  #geom_rect() color inside of the violin box 
+# Violin plot shows that relative density of the point, tells you about concentration and distribution 
 ggplot(LAGOStrophic, aes(x = state, fill = trophic.class)) +
-  geom_bar(stat = "count", position = position_dodge(preserve = "single")) +
+  geom_bar(stat = "count", position = position_dodge(preserve = "single")) + #dodge gets them side by side not stacked, Preserve single will just give each state just o fill the space
   theme(legend.position = "top") +
   labs(x = "", y = "Number of Observations", fill = "Trophic Class") +
   scale_fill_viridis_d(option = "magma", begin = 0.2, end = 0.8, direction = -1)
