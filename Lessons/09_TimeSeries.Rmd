@@ -121,6 +121,7 @@ ggplot(Neuse_Components) +
   geom_line(aes(y = trend, x = Date), color = "#c13d75ff") +
   geom_hline(yintercept = 0, lty = 2) +
   labs(x = "", y = "Discharge (cfs)")
+#LN: The trend is always positive 
 
 # Visualize how the seasonal cycle maps onto the data
 ggplot(Neuse_Components) +
@@ -128,6 +129,8 @@ ggplot(Neuse_Components) +
   geom_line(aes(y = seasonal, x = Date), color = "#c13d75ff") +
   geom_hline(yintercept = 0, lty = 2) +
   labs(x = "", y = "Discharge (cfs)")
+#LN: With seasonal goes positive and negative
+#Interpret with cautious and proceed with cautious 
 
 ```
 
@@ -158,11 +161,11 @@ Recall that conductivity is negatively correlated with discharge in the Neuse. B
 
 We see that conductivity data were collected approximately monthly across the sampling period. However, most trend tests require identically distributed data. We will therefore interpolate the data to generate monthly values for conductivity 
 
-Common interpolation methods: 
+Common interpolation methods:# Filling  
 
-* **Piecewise constant**: <fill in notes here>
-* **Linear**: <fill in notes here>
-* **Spline**: <fill in notes here>
+* **Piecewise constant**: <fill in notes here> #LN Nearest neighbor (takes the last date and define across the gap)
+* **Linear**: <fill in notes here> # Connect the dot straight (common to use a variety)
+* **Spline**: <fill in notes here> # Uses quadratic formula 
 
 Linear interpolation is most common for water quality data, and fits with our understanding about how conductivity might change over time in this system. 
 
@@ -175,7 +178,7 @@ NeuseCond_processed <- NeuseCond %>%
          Conductivity = ResultMeasureValue) %>%
   mutate(Year = year(Date),
          Month = month(Date),
-         Date_monthrounded = floor_date(Date, "month")) %>%
+         Date_monthrounded = floor_date(Date, "month")) %>%  # floor_date just rounded it down 
   arrange(Date)
 
 NeuseCond_monthly <- left_join(Months, NeuseCond_processed)
@@ -192,7 +195,11 @@ NeuseCond_monthly$Conductivity <- linearinterpolation$y
 3. Analyze the decomposed time series. Is there distinct seasonality? How does the magnitude of seasonality compare to the trend and random components of the time series? What are some caveats that need to be considered for the gap between October 2001 through February 2007?
 
 ```{r}
+NeuseCond_monthly_ts <- ts(NeuseCond_monthly$Conductivity, frequency = 12)
 
+NeuseCond_monthly_Dec <- stl(NeuseCond_monthly_ts, s.window = "periodic")
+
+plot(NeuseCond_monthly_Dec)
 ```
 
 

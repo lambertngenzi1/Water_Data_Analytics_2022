@@ -11,7 +11,7 @@ editor_options:
 ## Lesson Objectives
 1. Choose appropriate time series analyses for trend detection and forecasting
 2. Discuss the influence of seasonality on time series analysis
-3. Perform foecasting with ARMA modeling
+3. Perform forecasting with ARMA modeling
 4. Interpret and communicate results of time series analyses 
 
 ## Session Set Up
@@ -25,7 +25,7 @@ library(dataRetrieval)
 library(cowplot)
 #install.packages("trend")
 library(trend)
-#install.packages("forecast")
+install.packages("forecast")
 library(forecast)
 #install.packages(tseries)
 library(tseries)
@@ -54,12 +54,14 @@ Note: ALWAYS look into the assumptions of a given test to ensure it matches with
 In general, detecting a monotonic trend requires a long sequence of data with few gaps. If we are working with monthly data, a time series of at least ten years is recommended. Gaps can be accounted for, but a gap that makes up more than 1/3 of the sampling period is generally considered the threshold for considering a gap to be too long (a step trend analysis might be better in this situation). 
 
 Adjusting the data may be necessary to fulfill the assumptions of a trend test. These adjustments include **aggregation**, **subsampling**, and **interpolation**. What do each of these mean, and why might we want to use them?
+# LNTime series usually done on monthly data over daily 
+> aggregation:(taking data or central tendency from daily to monthly)
+Good reason, time series better to do on the same month 
 
-> aggregation: 
+> subsampling: taking part of your data that you will run your model with and test or
+I got daily data and take 14 days. Can subsample
 
-> subsampling: 
-
-> interpolation: 
+> interpolation: Use sourounding data to fill in the gap 
 
 Specific tests for monotonic trend analysis are listed below, with assumptions and tips: 
 
@@ -128,8 +130,12 @@ Let's visualize the seasonality of these two datasets. Add some editing to impro
 
 ```{r}
 Condplot <-
-ggplot(NeuseCond_monthly, aes(x = as.factor(Month), y = Conductivity)) +
-  geom_boxplot()
+ggplot(subset(NeuseCond_monthly, !is.na(Month)), 
+       aes(x = as.factor(Month), y = Conductivity)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  labs(x = "", y = expression("Conductivity")("*mu*S/cm)")) 
+                          
 
 Flowplot <-
 ggplot(NeuseFlow_monthly, aes(x = as.factor(Month), y = Discharge_acftmo)) +
@@ -165,7 +171,8 @@ Exercise: run the same test for discharge.
 ```{r}
 NeuseFlow_timeseries <- ts(NeuseFlow_monthly$Discharge_acftmo, frequency = 12,
                            start = c(1976, 1, 1), end = c(2021, 12, 1))
-
+NeuseFlow_trend <- smk.test(NeuseFlow_timeseries)
+NeuseFLow_Trend <- summary(Neuse_flow_trend)
 
 ```
 
@@ -187,7 +194,7 @@ ARMA models require stationary data. This means that there is no monotonic trend
 
 ```{r}
 
-adf.test(NeuseFlow_timeseries, alternative = "stationary")
+adf.test(NeuseFlow_timeseries, alternative = "stationary") # Stationary, no trend over time 
 
 ```
 
@@ -195,8 +202,8 @@ Let's inspect the ACF and PACF plots. Notice the ACF plot has repeating positive
 
 ```{r}
 
-acf(NeuseFlow_timeseries)
-pacf(NeuseFlow_timeseries)
+acf(NeuseFlow_timeseries) #Autocorrelation decays over time 
+pacf(NeuseFlow_timeseries) #This decays faster and no seasonality 
 
 ```
 
@@ -220,6 +227,6 @@ ts.plot(NeuseFlow_timeseries, Neuseprediction$pred, lty = c(1, 3))
 
 How do future predictions compare to the past? Why might the forecast be lacking in complexity?
 
-> 
+> A large of range of residuas are so large that we are not capture the range
 
 
