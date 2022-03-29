@@ -71,7 +71,7 @@ For example, let's find out how many lakes are in each state. Note that LAGOSloc
 
 ```{r}
 # Join data frames
-LAGOSlocations <- left_join(LAGOSlocus, LAGOSstate, by = "state_zoneid") #DOnt always need to specify 
+LAGOSlocations <- left_join(LAGOSlocus, LAGOSstate, by = "state_zoneid") #Don't always need to specify 
 # when all the columns are the same With different columns (by = c("colname1, ...))
 
 ggplot(LAGOSlocations, aes(x = state)) + 

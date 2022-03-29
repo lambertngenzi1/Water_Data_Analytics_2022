@@ -61,9 +61,9 @@ Parameters of interest:
 
 
 ```{r}
-NeuseParams <- whatNWISdata(siteNumbers = "02089500")
+NeuseParams <- whatNWISdata(siteNumbers = "02089500")  # can just google USGS parameter 
 
-NeuseWQ <- readWQPqw(siteNumbers = "USGS-02089500", # Neuse River at Kinston, NC
+NeuseWQ <- readWQPqw(siteNumbers = "USGS-02089500", # Neuse River at Kinston, NC  # Have to add uSGS before site number
                      parameterCd = c("00915", # calcium, filtered mg/L
                                      "00925", # magnesium, filtered mg/L
                                      "00930", # sodium,filtered mg/L
@@ -75,7 +75,7 @@ NeuseWQ <- readWQPqw(siteNumbers = "USGS-02089500", # Neuse River at Kinston, NC
 
 unique(NeuseWQ$CharacteristicName)
 
-NeuseFlow <- readNWISdv(siteNumbers = "02089500",
+NeuseFlow <- readNWISdv(siteNumbers = "02089500",      #Use Read for flow 
                      parameterCd = "00060", # discharge (cfs)
                      startDate = "1976-01-01",
                      endDate = "")
@@ -90,10 +90,10 @@ NeuseWQ_processed <- NeuseWQ %>%
                               CharacteristicName == "Magnesium" ~ "Magnesium_mg.L",
                               CharacteristicName == "Sodium" ~ "Sodium_mg.L")) %>%
   select(-CharacteristicName) %>%
-  pivot_wider(names_from = "Variable", values_from = "ResultMeasureValue")
+  pivot_wider(names_from = "Variable", values_from = "ResultMeasureValue") #When you have space, things to get trickier. Better use no space in
 
 NeuseFlow_processed <- NeuseFlow %>%
-  select(ActivityStartDate = Date, Flow_cfs = X_00060_00003) %>%
+  select(ActivityStartDate = Date, Flow_cfs = X_00060_00003) %>% #How you can rename without making a new dateset
   filter(ActivityStartDate >= min(NeuseWQ_processed$ActivityStartDate) & 
            ActivityStartDate <= max(NeuseWQ_processed$ActivityStartDate))
 
@@ -140,17 +140,17 @@ ggplot(NeuseWQFlow_processed, aes(x = ActivityStartDate, y = SpC_uS.cm)) +
 
 ```
 
-What is the relationship between flow and the water quality indicators?
+What is the relationship between flow and the water quality indicators? A lot of variabilities in the data
 
 ```{r}
 
 ggplot(NeuseFlow_summary, aes(x = DOY)) +
   geom_line(aes(y = median_Flow_cfs)) +
-  geom_ribbon(aes(ymin = p25_Flow_cfs, ymax = p75_Flow_cfs), fill = "gray", alpha = 0.2) +
+  geom_ribbon(aes(ymin = p25_Flow_cfs, ymax = p75_Flow_cfs), fill = "black", alpha = 0.2) +
   #geom_point(data = NeuseWQFlow_processed, aes(y = FecalColiform_cfu.100mL)) +
   #geom_point(data = NeuseWQFlow_processed, aes(y = SpC_uS.cm)) +
   scale_y_log10() +
-  labs(x = "Day of Year", y = "Flow (cfs)")
+  labs(x = "Day of Year", y = "Flow (cfs)")  # Wet and dry season graph 
 
 ggplot(NeuseWQFlow_processed, aes(x = Flow_cfs, y = FecalColiform_cfu.100mL)) +
   geom_point() +
@@ -168,7 +168,7 @@ ggplot(NeuseWQFlow_processed, aes(x = Flow_cfs, y = SpC_uS.cm)) +
   scale_y_log10() +
   labs(x = "Flow (cfs)", y = expression("Specific Conductivity ("*mu*"S/cm)"))
 
-summary(lm(data = NeuseWQFlow_processed, log10(SpC_uS.cm) ~ log10(Flow_cfs)))
+plot(lm(data = NeuseWQFlow_processed, log10(SpC_uS.cm) ~ log10(Flow_cfs)))
 
 ```
 

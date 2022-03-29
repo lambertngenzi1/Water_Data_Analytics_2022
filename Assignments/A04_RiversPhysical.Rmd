@@ -65,17 +65,29 @@ BitterrootQ_Flow <- BitterrootQ %>%
          Baseflow_lfstat = baseflow(Discharge),
          Stormflow_lfstat = Discharge - Baseflow_lfstat)
 
-#BitterrootQ$WaterYear <- water_year()
-
-BitterrootQ$WaterYear <- as.numeric(as.character(BitterrootQ$WaterYear))
+BitterrootQ_Flow$WaterYear <- as.numeric(as.character(BitterrootQ_Flow$WaterYear))
 
 
 NehalemQ_Flow <- NehalemQ %>% 
   mutate(WaterYear = water_year(Date),
          Baseflow_lfstat = baseflow(Discharge),
          Stormflow_lfstat = Discharge - Baseflow_lfstat)
+NehalemQ_Flow$WaterYear <- as.numeric(as.numeric(BitterrootQ_Flow$WaterYear))
 
-  
+#4
+BitterrootQ_Flow_Summary <- BitterrootQ_Flow %>%
+  group_by(WaterYear) %>%
+  summarise(Discharge_acft_yr = sum(Discharge, na.rm = TRUE)*723.968,
+            Baseflow_acft_yr = sum(Baseflow_lfstat, na.rm = TRUE)*723.968,
+            Baseflow_prop = Baseflow_acft_yr/Discharge_acft_yr) %>%
+   mutate_if(is.numeric, round, 2)
+
+NehalemQ_Flow_Summary <- NehalemQ_Flow %>%
+  group_by(WaterYear) %>%
+  summarise(Discharge_acft_yr = sum(Discharge, na.rm = TRUE)*723.968,
+            Baseflow_acft_yr = sum(Baseflow_lfstat, na.rm = TRUE)*723.968,
+            Baseflow_prop = Baseflow_acft_yr/Discharge_acft_yr) %>%
+   mutate_if(is.numeric, round, 2)
 ```
 
 ## Analyze seasonal patterns in discharge
@@ -84,8 +96,49 @@ NehalemQ_Flow <- NehalemQ %>%
 6. For both sites, create a graph displaying annual total discharge and annual baseflow across years, and a second graph displaying the proportion baseflow across years (adjust axis labels accordingly). Plot these graphs on top of one another using `plot_grid`. Remember to align the axes!
 
 ```{r}
+#6 
+ggplot(BitterrootQ_Flow, aes(Date, Baseflow_lfstat)) +
+  geom_line(aes(color = "Total")) +
+  geom_line(aes(y = Baseflow_lfstat, color = "Baseflow")) +
+  scale_color_manual(values = c("Total" = "black", "Baseflow" = "gray")) +
+  labs(x = "Year", y = "Discharge (cfs)", color = "") +
+  theme(legend.position = "top")
 
+ggplot(NehalemQ_Flow, aes(Date, Baseflow_lfstat)) +
+  geom_line(aes(color = "Total")) +
+  geom_line(aes(y = Baseflow_lfstat, color = "Baseflow")) +
+  scale_color_manual(values = c("Total" = "black", "Baseflow" = "gray")) +
+  labs(x = "Year", y = "Discharge (cfs)", color = "") +
+  theme(legend.position = "top")
+#7
+TotQ <- ggplot(BitterrootQ_Flow_Summary, aes(WaterYear, Discharge_acft_yr)) +
+  geom_line() +
+   geom_line(aes(y = Baseflow_acft_yr), lty = 2) +
+  labs(x = "", y = "Discharge (ac*ft/yr)") +
+  scale_x_continuous(breaks = c(2012, 2014, 2016, 2018, 2020))
 
+TotB <-  ggplot(BitterrootQ_Flow_Summary, aes(WaterYear, Baseflow_acft_yr)) +
+   geom_col() +
+  labs(x = "Water Year", y = "Baseflow_prop.") +
+  scale_x_continuous(breaks = c(2012, 2014, 2016, 2018, 2020))
+plot(TotB)
+
+plot_grid(TotQ, TotB, align = "hv", ncol = 1)
+
+TotQ_N <- ggplot(NehalemQ_Flow_Summary, aes(x = WaterYear, y = Discharge_acft_yr)) +
+  geom_line() +
+  geom_line(aes(y = Baseflow_acft_yr), lty = 2) +
+  labs(x = "", y = "Discharge (ac*ft/yr)") +
+  scale_x_continuous(breaks = c(2012, 2014, 2016, 2018, 2020))
+plot(TotQ_N)
+
+TotB_N <- ggplot(NehalemQ_Flow_Summary, aes(x = WaterYear, y = Baseflow_prop)) +
+  geom_col(fill = "black") +
+  labs(x = "Water Year", y = "Baseflow_prop.") +
+  scale_x_continuous(breaks = c(2012, 2014, 2016, 2018, 2020))
+plot(TotB_N)
+
+plot_grid(TotQ_N, TotB_N, align = "hv", ncol = 1)
 ```
 
 7. How do these rivers differ in their discharge and baseflow, both within and across years? How would you attribute these patterns to the climatic conditions in these locations?

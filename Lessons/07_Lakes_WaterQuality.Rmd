@@ -73,10 +73,11 @@ EPA also recently released a suite of stressor-response models built from the Na
 LAGOSgeo <- left_join(LAGOSgeo, LAGOSstate)
 
 LAGOSjoined <- LAGOSnutrient %>%
-  left_join(., LAGOSgeo) %>%
+  left_join(., LAGOSgeo)# %>%
   left_join(., LAGOSlocus) %>%
   left_join(., LAGOSlulc) %>%
   left_join(., LAGOSlimno)
+drop_na(state_name) #Allows to drop NA completely
 
 ggplot(LAGOSjoined, aes(x = tp, y = chla)) +
   geom_point(alpha = 0.1) +
@@ -116,6 +117,18 @@ Exercise:
 8. Create a linear model to evaluate the chlorophyll-TP relationship, with HUC 4 code as an interaction effect. Is it important to account for the HUC 4 code in the model? How might this classification impact potential nutrient management?
 
 ```{r}
+LAGOShu4 <- LAGOSdata$hu4
+LAGOSMN <- left_join(LAGOSjoined, LAGOShu4)
+
+LAGOSMN <- LAGOSMN %>% 
+  select(lagoslakeid, sampledate, state_name, hu4, chla, tn, tp) %>% 
+  mutate(Year = year(sampledate),
+         Month = month(sampledate)) %>% 
+  filter(state_name == "Minnesota") %>% 
+  filter(Month %in% c(6:9)) %>% 
+  filter(Year >= 1990) %>% 
+  filter(hu4 %in% c("0401", "0701", "0702", "0703", "0704", "0902"))
+
 
 
 ```
