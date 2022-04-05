@@ -227,6 +227,6 @@ ts.plot(NeuseFlow_timeseries, Neuseprediction$pred, lty = c(1, 3))
 
 How do future predictions compare to the past? Why might the forecast be lacking in complexity?
 
-> A large of range of residuas are so large that we are not capture the range
+> A large of range of residuals are so large that we are not capture the range
 
 
