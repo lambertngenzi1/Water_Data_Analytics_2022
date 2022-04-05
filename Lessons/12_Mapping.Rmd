@@ -7,7 +7,7 @@ geometry: margin=2.54cm
 editor_options: 
   chunk_output_type: console
 ---
-
+## We changed the ID with Eno river
 ## Lesson Objectives
 
 1. Delineate watersheds and flowlines using nhdplusTools
@@ -20,8 +20,8 @@ library(tidyverse)
 library(dataRetrieval)
 library(maps)
 library(sf)
-# install.packages("nhdplusTools")
-library(nhdplusTools)
+install.packages("nhdplusTools")
+#library(nhdplusTools)
 
 theme_set(theme_classic())
 options(scipen = 5)
@@ -50,7 +50,7 @@ Let's delineate the upstream watershed for the sampling and gage site: Neuse Riv
 
 ```{r}
 # Recall there are a lot of parameters measured at the site
-NeuseParams <- whatNWISdata(siteNumbers = "02089500")
+NeuseParams <- whatNWISdata(siteNumbers = "02085070")
 
 # Extract latitude and longitude for the site
 NeuseCoords <- NeuseParams %>%
@@ -78,20 +78,20 @@ subset <- subset_nhdplus(comids = as.integer(NLDI$UT$nhdplus_comid),
                          return_data = TRUE, overwrite = TRUE)
 
 # Create data frames
-flowline <- subset$NHDFlowline_Network
-catchment <- subset$CatchmentSP
-waterbody <- subset$NHDWaterbody
+flowline <- subset$NHDFlowline_Network #
+catchment <- subset$CatchmentSP  # polygon
+waterbody <- subset$NHDWaterbody  # Anything as a waterbdy withi the catchment 
 
 class(flowline)
 class(catchment)
 class(waterbody)
 
 # find gages near watershed
-gages <- get_nwis(AOI = catchment)
+gages <- get_nwis(AOI = catchment)  # to find nearby gage especially upstream of the river, can specify the area
 class(gages)
 
 # find gages only within watershed
-gages <- st_intersection(gages, catchment)
+gages <- st_intersection(gages, catchment) #take 2 datasets and find the intersection
 
 ```
 
@@ -108,7 +108,7 @@ Extensions:
 
 ```{r}
 
-plot_nhdplus("USGS-02089500", streamorder = 3)
+plot_nhdplus("USGS-02085070", streamorder = 3)
 
 states <- st_as_sf(map(database = "state", plot = FALSE, fill = TRUE, col = "white"))
 nc <- filter(states, ID == "north carolina")
