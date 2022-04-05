@@ -57,8 +57,8 @@ library(LAGOSNE)
 library(sf)
 # install.packages("maps")
 library(maps)
-# install.packages("gganimate")
-library(gganimate)
+install.packages("gganimate")
+#library(gganimate)
 
 theme_set(theme_classic())
 options(scipen = 4)
@@ -85,7 +85,7 @@ states.subset <- filter(states, ID %in%
                             "pennsylvania", "new york", "new jersey",
                             "connecticut", "new hampshire", "rhode island",
                             "massachusetts", "vermont", "maine"))
-
+states.subset.ME <- filter(states, ID %in% "maine")
 # visualize state plot
 ggplot(states.subset) +
   geom_sf(fill = "white")
@@ -119,6 +119,7 @@ Let's create a new data frame of average Secchi depth for each lake. Notice that
 
 ```{r}
 secchi.summary <- LAGOScombined %>%
+  filter(sampledate > "2012-12-31") %>% 
   group_by(lagoslakeid) %>%
   summarise(secchi.mean = mean(secchi),
             area = mean(lake_area_ha),
@@ -126,6 +127,8 @@ secchi.summary <- LAGOScombined %>%
             lat = mean(nhd_lat), 
             long = mean(nhd_long)) %>%
   drop_na()
+
+
 ```
 
 ## A Word on Projections
@@ -141,8 +144,8 @@ secchi.spatial <- st_as_sf(secchi.summary, coords = c("long", "lat"), crs = 4326
 ggplot() +
   geom_sf(data = states.subset, fill = "white") +
   geom_sf(data = secchi.spatial, aes(color = secchi.mean), 
-          alpha = 0.5, size = 1) +
-  scale_color_viridis_c(trans = "log10", end = 0.8) +
+          alpha = 0.2, size = 1) +
+  scale_color_viridis_c(trans = "log10", end = 0.8, direction = -1) +
   labs(color = "Average Secchi Depth (m)") +
   theme(legend.position = "top")
 
@@ -154,18 +157,55 @@ Your turn! Notice that Maine has a large number of lakes with secchi depth measu
 1. Filter the states and secchi depth datasets so that they contain Maine only. For the secchi depth dataset, create a summary dataset with just the mean secchi depth. 
 
 ```{r}
+secchi.summary.ME <- LAGOScombined %>%
+  filter(state == "ME") %>% 
+  group_by(lagoslakeid) %>%
+  summarise(secchi.mean = mean(secchi),
+            area = mean(lake_area_ha),
+            depth = mean(maxdepth),
+            lat = mean(nhd_lat), 
+            long = mean(nhd_long)) %>%
+  drop_na()
 
 ```
 
 2. Create a plot of mean secchi depth for lakes in Maine, with mean secchi depth designated as color and the lake area as the size of the dot. Remember that you are using size in the aesthetics and should remove the size = 1 from the other part of the code. Adjust the transparency of points as needed.
 
 ```{r}
+secchi.spatial.ME <- st_as_sf(secchi.summary.ME, coords = c("long", "lat"), crs = 4326)
+
+ggplot() +
+  geom_sf(data = states.subset.ME, fill = "white") +
+  geom_sf(data = secchi.spatial.ME, aes(color = secchi.mean), 
+          alpha = 0.5, size = 1) +
+  scale_color_viridis_c(trans = "log10", end = 0.8, direction = -1) +
+  labs(color = "Average Secchi Depth (m)") +
+  theme(legend.position = "top")
 
 ```
 
 3. Create a second plot, but this time use maximum depth of the lake as the size of the dot. 
 
 ```{r}
+secchi.ME.Max <- LAGOScombined %>%
+  filter(state == "ME") %>% 
+  group_by(lagoslakeid) %>%
+  summarise(secchi.max = max(secchi),
+            area = mean(lake_area_ha),
+            depth = mean(maxdepth),
+            lat = mean(nhd_lat), 
+            long = mean(nhd_long)) %>%
+  drop_na()
+
+secchi.spatial.ME.Max <- st_as_sf(secchi.ME.Max, coords = c("long", "lat"), crs = 4326)
+
+ggplot() +
+  geom_sf(data = states.subset.ME, fill = "white") +
+  geom_sf(data = secchi.spatial.ME.Max, aes(color = secchi.max), 
+          alpha = 0.5, size = "Max.Depth (m)") +
+  scale_color_viridis_c(trans = "log10", end = 0.8, direction = -1) +
+  labs(color = "Average Secchi Depth (m)") +
+  theme(legend.position = "top")
 
 ```
 
