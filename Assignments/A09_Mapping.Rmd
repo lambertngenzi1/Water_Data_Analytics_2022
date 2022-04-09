@@ -28,7 +28,15 @@ Target due date: 2022-04-12
 
 
 ```{r setup}
+library(tidyverse)
+library(dataRetrieval)
+library(maps)
+library(sf)
+install.packages("nhdplusTools")
+#library(nhdplusTools)
 
+theme_set(theme_classic())
+options(scipen = 5)
 ```
 
 ## LAGOS-NE
@@ -39,6 +47,45 @@ Target due date: 2022-04-12
 * A boxplot with jittered points layered on top of chlorophyll concentrations in each lake (chlorophyll on y axis, lake on x axis), with each lake having a fill and/or color that matches the map. 
 
 ```{r}
+LAGOSdatabase <- lagosne_load()
+
+Mystate <- st_as_sf(map(database = "state", plot = FALSE,
+                        fill = TRUE))
+
+Iowa_subset <- filter(Mystate, ID == "iowa")
+
+Lagoslocus <- LAGOSdatabase$locus
+LAGOSstate <- LAGOSdatabase$state
+LAGOSnutrient <- LAGOSdatabase$epi_nutr
+
+LAGOS_Together <- left_join(LAGOSnutrient, Lagoslocus) %>% left_join(., LAGOSstate) %>% 
+  filter(state == "IA") %>% 
+  select(lagoslakeid, sampledate, chla, nhd_lat, nhd_long) %>%
+drop_na(chla) %>%
+arrange(lagoslakeid)
+ 
+lake_sample <- sample(LAGOS_Together$lagoslakeid, size = 5)
+
+LAGOSsample <- LAGOS_Together %>% 
+  filter(lagoslakeid %in% lake_sample)
+colnames(LAGOSsample)
+
+LAGOSsample_sp <- st_as_sf(LAGOSsample, coords = c("nhd_long", "nhd_lat"), crs = 4326)
+
+ggplot() +
+  geom_sf(data = Iowa_subset, fill = "white") +
+  geom_sf(data = LAGOSsample_sp, aes(color =as.factor(lagoslakeid)))+
+scale_color_viridis_d() +
+labs(color = "Lake ID") +
+theme(legend.position = "top")
+
+ggplot(LAGOSsample, aes(as.factor(lagoslakeid), y = chla, fill = as.factor(lagoslakeid))) +
+  geom_boxplot() +
+  geom_jitter()+
+  scale_y_log10() +
+scale_fill_viridis_d() +
+labs(x = "Lake ID", y = expression("Chlorophyll a ("*mu*"g/L)"), fill = "") +
+theme(legend.position = "none")
 
 
 ```
@@ -50,13 +97,41 @@ Target due date: 2022-04-12
 
 
 ```{r}
+EnoParams <- whatNWISdata(siteNumbers = "02085070")
+EnoCoords <- EnoParams %>%
+select(site_no, dec_lat_va, dec_long_va) %>%
+distinct()
 
+start_point <- st_sfc(st_point(c(EnoCoords$dec_long_va, EnoCoords$dec_lat_va)),
+crs = 4269)
 
+start_comid <- discover_nhdplus_id(start_point)
+
+NLDI <- navigate_nldi(list(featureSource = "comid", featureID = start_comid),
+mode = "upstreamTributaries",
+distance_km = 1000)
+
+subset_file <- tempfile(fileext = ".gpkg")
+subset <- subset_nhdplus(comids = as.integer(NLDI$UT$nhdplus_comid),
+output_file = subset_file,
+nhdplus_data = "download",
+flowline_only = FALSE,
+return_data = TRUE, overwrite = TRUE)
+
+flowline <- subset$NHDFlowline_Network
+catchment <- subset$CatchmentSP
+
+plot_nhdplus("USGS-02085070")
+
+max(flowline$totdasqkm)
+summary(as.factor(flowline$streamorde))
+
+gages <- get_nwis(AOI = catchment)
 ```
 
 4. What is the upstream drainage area for this gage, and how are the flowpaths distributed with regard to stream order?
 
-> 
+> 368 sq kilometers with 123, 45, 19, and 28 flowpaths of respective stream order of 1, 2,3,and 4
 
 5. Are there any other gage sites in the upstream catchment? If so, where are they?
-> 
+>  we have cole mill road and hillsborough 
